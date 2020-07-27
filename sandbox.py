@@ -1,13 +1,13 @@
 from vdu_nlp_services import stress_text
+from vdu_nlp_services.soap_stressor import _stress_re
 from zipfile import ZipFile
 from conllu import parse_incr
 from io import TextIOWrapper
-from grammar_map import matas_service_pairs, matas_service_opposite_pairs, service_matas_tag_map
+from tag_map import matas_service_pairs, matas_service_opposite_pairs, service_matas_tag_map
 import re
 
 matas_archive_filename = './dataset/MATAS-v1.0.zip'
 
-stress_pattern = re.compile(r'(\d+\.)\s+([^\(]+)\s+\(([^\)]+)\)')
 matas_conllu_filename_pattern = re.compile(r'MATAS-v1\.0\/CONLLU\/.*\.conllu')
 tag_pattern = re.compile(r'[\w-]+\.')
 
@@ -15,10 +15,10 @@ def stress(word):
 	res = stress_text(word.strip()).splitlines()
 
 	for line in res:
-		m = stress_pattern.match(line)
+		m = _stress_re.match(line)
 		if m:
-			word = m.group(2)
-			details = m.group(3).split(' ')
+			word = m.group(1)
+			details = m.group(2).split(' ')
 			yield {'word': word, 'details': details}
 		else:
 			yield {'word': word, 'details': []}
