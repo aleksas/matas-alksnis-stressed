@@ -1,2 +1,2 @@
-vdu-nlp-services
+vdu-nlp-services>=0.0.22
 conllu

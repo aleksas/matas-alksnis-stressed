@@ -31,16 +31,26 @@ def get_dataset_connlu_files(encoding='utf-8'):
 					with TextIOWrapper(fp, encoding=encoding) as text_fp:
 						yield text_fp
 
+missing_tags = set([])
 
 def convert_stress_to_matas_tags(stress_tags, matas_tags=None):
+	skip = False
 	if matas_tags:
-		for matas_tag, stress_tag in matas_service_opposite_pairs:
-			if stress_tag in stress_tags and matas_tag in matas_tags:
-				raise Exception()
+		for matas_oposite_tag, stress_oposite_tag in matas_service_opposite_pairs:
+			if stress_oposite_tag in stress_tags and matas_oposite_tag in matas_tags:
+				# Skip tags if obviously wrong
+				skip = True
 	
-	for tag in stress_tags:
-		if service_matas_tag_map[tag]:
-			yield service_matas_tag_map[tag]
+	if not skip:
+		for tag in stress_tags:
+			if tag not in service_matas_tag_map:
+				missing_tags.add(tag)
+				print('\n'.join(missing_tags))
+			else:
+				if service_matas_tag_map[tag]:
+					mapped_tag = service_matas_tag_map[tag]
+					if mapped_tag:
+						yield mapped_tag
 
 def get_stessed_sentences():
 	for fp in get_dataset_connlu_files():
@@ -68,7 +78,7 @@ def get_stessed_sentences():
 					for tag in tag_pattern.finditer(token['xpos']):
 						matas_tag_set.add(tag.group(0))
 					
-					converted_stress_tags = list(convert_stress_to_matas_tags(stress_tag_set, matas_tag_set))
+					converted_stress_tags = convert_stress_to_matas_tags(stress_tag_set, matas_tag_set)
 					tags = set(converted_stress_tags).difference( matas_tag_set )
 					stress_options.append( (len(tags), each['word']) )
 
