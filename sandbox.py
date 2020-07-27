@@ -2,12 +2,14 @@ from vdu_nlp_services import stress_text
 from zipfile import ZipFile
 from conllu import parse_incr
 from io import TextIOWrapper
+from grammar_map import matas_service_pairs, matas_service_opposite_pairs, service_matas_tag_map
 import re
 
 matas_archive_filename = './dataset/MATAS-v1.0.zip'
 
 stress_pattern = re.compile(r'(\d+\.)\s+([^\(]+)\s+\(([^\)]+)\)')
 matas_conllu_filename_pattern = re.compile(r'MATAS-v1\.0\/CONLLU\/.*\.conllu')
+tag_pattern = re.compile(r'[\w-]+\.')
 
 def stress(word):
 	res = stress_text(word.strip()).splitlines()
@@ -29,33 +31,60 @@ def get_dataset_connlu_files(encoding='utf-8'):
 					with TextIOWrapper(fp, encoding=encoding) as text_fp:
 						yield text_fp
 
+
+def convert_stress_to_matas_tags(stress_tags, matas_tags=None):
+	if matas_tags:
+		for matas_tag, stress_tag in matas_service_opposite_pairs:
+			if stress_tag in stress_tags and matas_tag in matas_tags:
+				raise Exception()
+	
+	for tag in stress_tags:
+		if service_matas_tag_map[tag]:
+			yield service_matas_tag_map[tag]
+
 def get_stessed_sentences():
 	for fp in get_dataset_connlu_files():
 		for tokenlist in parse_incr(fp):
 			offset = 0
 			sentence = tokenlist.metadata['text']
-			stressed_sentence = ''
+			sentence_parts = []
 			
 			for token in tokenlist:
-				tags = token['xpos']
 				word = token['form']
 
 				word_offset = sentence.find(word, offset)
-				stressed_sentence += sentence[offset: word_offset]
+				
+				glue = sentence[offset: word_offset]
+			
+				if glue:
+					sentence_parts.append( (glue, glue) )
+
+				stress_options = []
+
+				for each in stress(word):
+					stress_tag_set = set(each['details'])
+
+					matas_tag_set = set([])
+					for tag in tag_pattern.finditer(token['xpos']):
+						matas_tag_set.add(tag.group(0))
+					
+					converted_stress_tags = list(convert_stress_to_matas_tags(stress_tag_set, matas_tag_set))
+					tags = set(converted_stress_tags).difference( matas_tag_set )
+					stress_options.append( (len(tags), each['word']) )
+
+				stress_options.sort(key=lambda a: a[0])
+
+				sentence_parts.append( (word, stress_options[0][1]) )
 
 				offset = word_offset + len(word)
 
-				for each in stress(word):
-					stressed_sentence += each['word']
-					# TODO: add mapping VDU stress to MATAS tags
-					# subtract setts, stress with smallest set size should be selected
-					break
-			
-			stressed_sentence += sentence[offset:]
+			glue = sentence[offset:]
 
-			yield sentence, stressed_sentence #, (tokenlist.metadata['sent_id'], tokenlist.metadata['newpar id'], tokenlist.metadata['newdoc id'])
+			if glue:
+				sentence_parts.append( (glue, glue) )
 
-for sentence, stressed_sentence in get_stessed_sentences():
+			yield sentence_parts
+
+for sentence in get_stessed_sentences():
 	print(sentence)
-	print(stressed_sentence)
 	print()
