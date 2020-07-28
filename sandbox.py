@@ -11,6 +11,10 @@ matas_archive_filename = './dataset/MATAS-v1.0.zip'
 matas_conllu_filename_pattern = re.compile(r'MATAS-v1\.0\/CONLLU\/.*\.conllu')
 tag_pattern = re.compile(r'[\w-]+\.')
 
+stress_tag_replacements = {
+	'Vt(ev).neįvardž.': ['Vt(ev).', 'neįvardž.']
+}
+
 def stress(word):
 	res = stress_text(word.strip()).splitlines()
 
@@ -18,7 +22,7 @@ def stress(word):
 		m = _stress_re.match(line)
 		if m:
 			word = m.group(1)
-			details = m.group(2).split(' ')
+			details = m.group(2).split(' ') if m.group(2) else []
 			yield {'word': word, 'details': details}
 		else:
 			yield {'word': word, 'details': []}
@@ -52,6 +56,18 @@ def convert_stress_to_matas_tags(stress_tags, matas_tags=None):
 					if mapped_tag:
 						yield mapped_tag
 
+def fix_stress_tags(stress_tags):
+	for tag in stress_tags:
+		if tag in stress_tag_replacements:
+			tag_replacement = stress_tag_replacements[tag]
+			if isinstance(tag_replacement, list):
+				for replacement in tag_replacement:
+					yield replacement
+			else:
+				yield tag_replacement
+		else:
+			yield tag
+
 def get_stessed_sentences():
 	for fp in get_dataset_connlu_files():
 		for tokenlist in parse_incr(fp):
@@ -72,7 +88,7 @@ def get_stessed_sentences():
 				stress_options = []
 
 				for each in stress(word):
-					stress_tag_set = set(each['details'])
+					stress_tag_set = set(fix_stress_tags(each['details']))
 
 					matas_tag_set = set([])
 					for tag in tag_pattern.finditer(token['xpos']):
