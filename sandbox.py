@@ -34,15 +34,14 @@ def get_stessed_sentences():
 			
 				if glue:
 					sentence_parts.append( (glue, glue) )
+					
+				matas_tag_set = set([])
+				for tag in tag_pattern.finditer(token['xpos']):
+					matas_tag_set.add(tag.group(0))
 
 				stress_options = []
-
 				for stressed_word, stress_tags in stress_word(word):
 					stress_tag_set = set(stress_tags)
-
-					matas_tag_set = set([])
-					for tag in tag_pattern.finditer(token['xpos']):
-						matas_tag_set.add(tag.group(0))
 					
 					converted_stress_tags = tag_map.convert_stress_to_matas_tags(stress_tag_set, matas_tag_set)
 					if tag_map.missing_tags:
