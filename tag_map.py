@@ -8,9 +8,9 @@ matas_service_pairs = [
 	('aukšč.', ''),
 	('aukšt.', ''),
 	('bdv.', 'bdvr.'),
-	('bendr.', ''),
+	('bendr.', 'bendr.gim.'),
 	('bev.', 'bevrd.gim.'),
-	('bndr.', 'bendr.gim.'),
+	('bndr.', ''),
 	('būdn.', 'būdn.'),
 	('būs.', 'būs.l.'),
 	('būt-d.', 'būt.d.l.'),
@@ -21,7 +21,7 @@ matas_service_pairs = [
 	('dkt.', 'dktv.'),
 	('dll.', 'dll.'),
 	('dlv.', 'dlv.'),
-	('dvisk.', ''),
+	('dvisk.', 'dvisk.'),
 	('es.', 'esam.l.'),
 	('G.', 'G.'),
 	('Il.', 'Vt(ev).'),
@@ -76,3 +76,23 @@ matas_service_opposite_pairs = [
 
 service_matas_tag_map = { s:m for m, s in matas_service_pairs }
 service_matas_tag_map.update( { s: None for _, s in matas_service_opposite_pairs } )
+
+missing_tags = set([])
+
+def convert_stress_to_matas_tags(stress_tags, matas_tags=None):
+	skip = False
+	if matas_tags:
+		for matas_oposite_tag, stress_oposite_tag in matas_service_opposite_pairs:
+			if stress_oposite_tag in stress_tags and matas_oposite_tag in matas_tags:
+				# Skip tags if obviously wrong
+				skip = True
+	
+	if not skip:
+		for tag in stress_tags:
+			if tag not in service_matas_tag_map:
+				missing_tags.add(tag)
+			else:
+				if service_matas_tag_map[tag]:
+					mapped_tag = service_matas_tag_map[tag]
+					if mapped_tag:
+						yield mapped_tag
