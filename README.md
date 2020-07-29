@@ -1,0 +1,2 @@
+- [Lithuanian Treebank - ALKSNIS v3.0](https://clarin.vdu.lt/xmlui/handle/20.500.11821/21)
+- [Lithuanian morphologically annotated corpus - MATAS v1.0](https://clarin.vdu.lt/xmlui/handle/20.500.11821/33)
