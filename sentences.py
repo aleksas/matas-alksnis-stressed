@@ -1,10 +1,7 @@
-from vdu_nlp_services import stress_word
 from zipfile import ZipFile
 from conllu import parse_incr
 from io import TextIOWrapper
-import tag_map
 import re
-import os
 
 datasets = [
 	('./datasets/Alksnis-3.0.zip', re.compile(r'Alksnis-3.0\/.*\.conllu')),
