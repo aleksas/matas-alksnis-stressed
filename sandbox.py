@@ -19,32 +19,29 @@ def get_dataset_connlu_files(encoding='utf-8'):
 				if conllu_filename_pattern.match(filename):
 					with zip_ref.open(filename, 'r') as fp:
 						with TextIOWrapper(fp, encoding=encoding) as text_fp:
-							yield text_fp, archive_filename
-
+							yield text_fp
 
 def get_tokenlists():
-	for fp, archive_filename in get_dataset_connlu_files():
+	for fp in get_dataset_connlu_files():
 		for tokenlist in parse_incr(fp):
-			yield tokenlist, archive_filename
+			yield tokenlist
 
 def get_stessed_sentences():
-	for tokenlist, archive_filename in get_tokenlists():
+	for tokenlist in get_tokenlists():
 		offset = 0
-		sentence = tokenlist.metadata['text']
-		sentence_id = tokenlist.metadata['sent_id']
-		paragraph_id = tokenlist.metadata['newpar id'] if 'newpar id' in tokenlist.metadata else None
-		document_id = tokenlist.metadata['newdoc id'] if 'newdoc id' in tokenlist.metadata else None
-		sentence_parts = []
+		text = tokenlist.metadata['text']
+		text_word_spans = []
+		stressed_text = ''
+		stressed_text_word_spans = []
 		
 		for token in tokenlist:
 			word = token['form']
 
-			word_offset = sentence.find(word, offset)
+			word_offset = text.find(word, offset)
+			text_word_spans.append( (word_offset, word_offset + len(word)) )
 			
-			glue = sentence[offset: word_offset]
-		
-			if glue:
-				sentence_parts.append( (glue, glue) )
+			glue = text[offset: word_offset]
+			stressed_text += glue
 				
 			jablonskis_tag = []
 			if 'xpos' in token:
@@ -66,16 +63,24 @@ def get_stessed_sentences():
 
 			stress_options.sort(key=lambda a: a[0])
 
-			sentence_parts.append( (word, stress_options[0][1]) )
+			stressed_text_word_spans.append( (len(stressed_text), len(stressed_text) + len(stress_options[0][1])) )
+			stressed_text += stress_options[0][1]
 
 			offset = word_offset + len(word)
 
-		glue = sentence[offset:]
+		glue = text[offset:]
+		stressed_text += glue
 
-		if glue:
-			sentence_parts.append( (glue, glue) )
+		tokenlist.metadata['stressed_text'] = stressed_text
+		tokenlist.metadata['text_word_spans'] = ','.join(['%d:%d' % span for span in text_word_spans])
+		tokenlist.metadata['stressed_text_word_spans'] = ','.join(['%d:%d' % span for span in stressed_text_word_spans])
 
-		yield sentence_parts, sentence, sentence_id, paragraph_id, document_id, archive_filename
+		yield (
+			tokenlist.metadata['text'],
+			tokenlist.metadata['stressed_text'],
+			tokenlist.metadata['text_word_spans'],
+			tokenlist.metadata['stressed_text_word_spans']
+		)
 
 for sentence in get_stessed_sentences():
 	print(sentence)
