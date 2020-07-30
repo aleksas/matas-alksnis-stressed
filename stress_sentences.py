@@ -28,16 +28,16 @@ def update_stress_stats(stress_stats, word, sorted_stress_options):
 
 	single_stress_option = stress_option_count == 1
 	multiple_stress_options = stress_option_count > 1
-	no_stress_options = len(sorted_stress_options) == 0
-	multiple_options_with_min_count = stress_option_count > 1 and limited_stress_option_count > 1
+	no_stress_options = stress_option_count == 0
+	multiple_min_diff_stress_options = stress_option_count > 1 and limited_stress_option_count > 1
 
-	stress_stats['single_stress_option'] += 1 if single_stress_option else 0
-	stress_stats['multiple_stress_options'] += 1 if multiple_stress_options else 0
-	stress_stats['no_stress_options'] += 1 if no_stress_options else 0
-	stress_stats['multiple_options_with_min_count'] += 1 if multiple_options_with_min_count else 0
+	stress_stats['single_stress_option_word_count'] += 1 if single_stress_option else 0
+	stress_stats['multiple_stress_option_word_count'] += 1 if multiple_stress_options else 0
+	stress_stats['no_stress_option_word_count'] += 1 if no_stress_options else 0
+	stress_stats['multiple_min_diff_stress_option_word_count'] += 1 if multiple_min_diff_stress_options else 0
 
-	if multiple_options_with_min_count:
-		stress_stats['words_multiple_options_with_min_count'].add(word)
+	if multiple_min_diff_stress_options:
+		stress_stats['words_with_multiple_min_diff_options'].add(word)
 
 def stessed_sentence(tokenlist):
 	offset = 0
@@ -47,11 +47,11 @@ def stessed_sentence(tokenlist):
 	stressed_text_word_spans = []
 	
 	stress_stats = {	
-		'single_stress_option': 0,
-		'multiple_stress_options': 0,
-		'no_stress_options': 0,
-		'multiple_options_with_min_count': 0,
-		'words_multiple_options_with_min_count': set([])
+		'single_stress_option_word_count': 0,
+		'multiple_stress_option_word_count': 0,
+		'no_stress_option_word_count': 0,
+		'multiple_min_diff_stress_option_word_count': 0,
+		'words_with_multiple_min_diff_options': set([])
 	}
 	
 	for token in tokenlist:
@@ -112,6 +112,10 @@ def stessed_sentences(encoding='utf-8'):
 			for tokenlist in parse_incr(fp):
 				stessed_sentence(tokenlist)
 				fpw.write(tokenlist.serialize())
+
+				for k, v in tokenlist.metadata.items():
+					print (k, v)
+				print()
 
 if __name__ == '__main__':
 	stessed_sentences()
