@@ -4,6 +4,7 @@ from conllu import parse_incr
 from io import TextIOWrapper
 import tag_map
 import re
+import os
 
 datasets = [
 	('./datasets/Alksnis-3.0.zip', re.compile(r'Alksnis-3.0\/.*\.conllu')),
@@ -21,10 +22,13 @@ def get_dataset_connlu_files(encoding='utf-8'):
 						with TextIOWrapper(fp, encoding=encoding) as text_fp:
 							yield text_fp
 
-def get_tokenlists():
-	for fp in get_dataset_connlu_files():
-		for tokenlist in parse_incr(fp):
-			yield tokenlist
+def get_tokenlists(encoding='utf-8'):
+	for fp in get_dataset_connlu_files(encoding=encoding):
+		os.makedirs(os.path.dirname(fp.name), exist_ok=True)
+		with open(fp.name, 'wt', encoding=encoding) as fpw:
+			for tokenlist in parse_incr(fp):
+				yield tokenlist
+				fpw.write(tokenlist.serialize())
 
 def get_stessed_sentences():
 	for tokenlist in get_tokenlists():
