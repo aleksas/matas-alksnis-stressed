@@ -22,5 +22,6 @@ def get_sentences():
 		for tokenlist in parse_incr(fp):
 			yield tokenlist.metadata['text']
 
-for sentence in get_sentences():
-	print(sentence)
+if __name__ == '__main__':
+	for sentence in get_sentences():
+		print(sentence)
