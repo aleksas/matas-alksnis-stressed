@@ -8,8 +8,6 @@ datasets = [
 	('./datasets/MATAS-v1.0.zip', re.compile(r'MATAS-v1\.0\/CONLLU\/.*\.conllu'))
 ]
 
-tag_pattern = re.compile(r'[\w-]+\.')
-
 def get_dataset_connlu_files(encoding='utf-8'):
 	for archive_filename, conllu_filename_pattern in datasets:
 		with ZipFile(archive_filename, 'r') as zip_ref:
