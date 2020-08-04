@@ -28,7 +28,7 @@ def get_sentences():
 				sentence += token['form']
 				if 'misc' in token and token['misc'] and 'SpaceAfter' in token['misc']:
 					if token['misc']['SpaceAfter'] == 'No':
-						sentence += ''
+						pass
 				else:
 					sentence += ' '
 
