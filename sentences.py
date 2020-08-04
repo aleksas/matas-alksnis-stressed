@@ -22,6 +22,9 @@ def get_sentences():
 		for tokenlist in parse_incr(fp):
 			sentence = ''
 			for token in tokenlist:
+				if token['form'] == '<g/>':
+					continue
+				
 				sentence += token['form']
 				if 'misc' in token and token['misc'] and 'SpaceAfter' in token['misc']:
 					if token['misc']['SpaceAfter'] == 'No':
