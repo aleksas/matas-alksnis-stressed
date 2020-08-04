@@ -26,13 +26,16 @@ def get_sentences():
 					continue
 				
 				sentence += token['form']
+				
+				space_after = True
 				if 'misc' in token and token['misc'] and 'SpaceAfter' in token['misc']:
 					if token['misc']['SpaceAfter'] == 'No':
-						pass
-				else:
+						space_after = False
+
+				if space_after:
 					sentence += ' '
 
-			yield sentence.rstrip()
+			yield sentence
 
 if __name__ == '__main__':
 	for sentence in get_sentences():
