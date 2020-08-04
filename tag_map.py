@@ -74,6 +74,56 @@ jablonskis_kirtis_opposite_tag_pairs = [
     ('sngr.', 'nesngr.')
 ]
 
+jablonskis_categories = [
+	'skyr.',
+	'dkt.',
+	'bdv.',
+	'sktv.',
+	'įv.',
+	'vksm.',
+	'prv.',
+	'jst.',
+	'išt.',
+	'dll.',
+	'prl.',
+	'jng.',
+	'akr.',
+	'sutr.',
+	'tęs.',
+	'užs.',
+	'kita'
+]
+
+fix_jablonskis_string = {
+	'būt.k.': 'būt-k.',
+	'~DEM.': ''
+}
+
+fix_jablonskis_tag_map = {
+	'dktv.': 'dkt.',
+	'samp.': 'sampl.',
+	'kiekin.': 'kiek.',
+	'kita.': 'kita',
+	'būts.': 'būt.',
+	'padlv.': 'pad.',
+	'Įv.': 'Įn.',
+	'vt.': 'Vt.',
+	'būdv.': 'bdv.',
+	'nelyg.': 'nelygin.',
+	'neygin.': 'nelygin.',
+	'v.':'V.'
+}
+fix_jablonskis_tag_map_key_set = set(fix_jablonskis_tag_map.keys())
+
+jablonskis_verb_form_tag_replacements = {
+    'dlv.': ['vksm.', 'dlv.'],
+    'pad.': ['vksm.', 'pad..'],
+    'pusd.': ['vksm.', 'pusd.'],
+    'būdn.': ['vksm.', 'būdn.']
+}
+
+valid_jablonskis_tag_set = set([ s for s,_ in jablonskis_kirtis_tag_pairs ])
+
 kirtis_jablonskis_tag_map = { s:m for m, s in jablonskis_kirtis_tag_pairs }
 kirtis_jablonskis_tag_map.update( { s: None for _, s in jablonskis_kirtis_opposite_tag_pairs } )
 

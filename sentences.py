@@ -20,7 +20,16 @@ def get_dataset_connlu_files():
 def get_sentences():
 	for fp in get_dataset_connlu_files():
 		for tokenlist in parse_incr(fp):
-			yield tokenlist.metadata['text']
+			sentence = ''
+			for token in tokenlist:
+				sentence += token['form']
+				if 'misc' in token and token['misc'] and 'SpaceAfter' in token['misc']:
+					if token['misc']['SpaceAfter'] == 'No':
+						sentence += ''
+				else:
+					sentence += ' '
+
+			yield sentence.rstrip()
 
 if __name__ == '__main__':
 	for sentence in get_sentences():

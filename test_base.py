@@ -5,21 +5,11 @@ from unittest import TestCase, main
 from stress_sentences import get_sorted_stress_options
 
 class SimpleTestCase(TestCase):
-    def test_1(self):
-        sorted_stress_options = get_sorted_stress_options('turi', 'vksm.asm.es.3.tiesiog.')
+    def test_3(self):
+        sorted_stress_options = get_sorted_stress_options('atrinkti', 'vksm.dlv.neveik.būt.vyr.dgs.V.', complex_ranking=True)
 
-        sorted_stress_option = sorted_stress_options[0][2]
-
-        self.assertEqual(sorted_stress_option, ['vksm.', 'es.', '3.', 'vns.'])        
-        self.assertEqual(sorted_stress_options[0][1], 'tu`ri')
-
-    def test_2(self):
-        sorted_stress_options = get_sorted_stress_options('negali', 'vksm.asm.es.3.tiesiog.neig.')
-
-        sorted_stress_option = sorted_stress_options[0][2]
-
-        self.assertEqual(sorted_stress_option, ['vksm.', 'es.', '3.', 'vns.'])        
-        self.assertEqual(sorted_stress_options[0][1], 'nega~li')
+        self.assertEqual(sorted_stress_options[0][2], ['dlv.', 'vyr.', 'būt.', 'dgs.', 'V.', 'neveik.'])        
+        self.assertEqual(sorted_stress_options[0][1], 'atrinkti`')
 
 if __name__ == '__main__':
     main()
