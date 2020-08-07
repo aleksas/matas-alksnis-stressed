@@ -1,3 +1,3 @@
 vdu-nlp-services>=0.0.26
-conllu
+conllu<3
 git+https://github.com/aleksas/multext-east-jablonskis-convertor.git
