@@ -1,27 +1,14 @@
+from archive_iterator import get_dataset_connlu_files
+from vdu_nlp_services import soap_stressor
 from vdu_nlp_services import stress_word
 from collections import OrderedDict
-from zipfile import ZipFile
 from conllu import parse_incr
-from io import TextIOWrapper
 import tag_map
 import re
 import os
-
-datasets = [
-	('./datasets/Alksnis-3.0.zip', re.compile(r'Alksnis-3.0\/.*\.conllu')),
-	('./datasets/MATAS-v1.0.zip', re.compile(r'MATAS-v1\.0\/CONLLU\/.*\.conllu'))
-]
+import json
 
 tag_pattern = re.compile(r'([\w-]+\.)|(kita)')
-
-def get_dataset_connlu_files(encoding='utf-8'):
-	for archive_filename, conllu_filename_pattern in datasets:
-		with ZipFile(archive_filename, 'r') as zip_ref:
-			for filename in zip_ref.namelist():
-				if conllu_filename_pattern.match(filename):
-					with zip_ref.open(filename, 'r') as fp:
-						with TextIOWrapper(fp, encoding=encoding) as text_fp:
-							yield text_fp
 
 def update_stress_stats(stress_stats, word, sorted_stress_options):
 	stress_option_count = len(set([s for _,s,_,_ in sorted_stress_options if s != word]))
@@ -50,6 +37,23 @@ def fix_jablonskis_tags(jablonskis_tags):
 		if tag in tag_map.fix_jablonskis_tag_map_key_set:
 			jablonskis_tags[i] = tag_map.fix_jablonskis_tag_map[tag]
 
+last_dump = -1
+def dump_stess_cache(filename='stress_cache.json', force_dump=False):
+	global last_dump
+	soap_stressor_stress_text_cache_len = len(soap_stressor._stress_text_cache)
+	if force_dump or (soap_stressor_stress_text_cache_len % 100 == 0 and last_dump != soap_stressor_stress_text_cache_len):
+		last_dump = soap_stressor_stress_text_cache_len
+		tmp_filename = filename + '.tmp'
+		with open(tmp_filename, 'wt',  encoding='utf-8') as fp:
+			d = {k:{dk:v[dk] for dk in ['Info', 'Klaida', 'out', 'in'] } for (k,v) in soap_stressor._stress_text_cache.items()}
+			json.dump(d, fp)
+		os.rename(tmp_filename, filename)
+
+def load_stess_cache(filename='stress_cache.json'):
+	if os.path.exists(filename):
+		with open(filename, 'rt',  encoding='utf-8') as fp:
+			soap_stressor._stress_text_cache = json.load(fp)
+
 def get_sorted_stress_options(word, tag_string):
 	if tag_string:
 		jablonskis_tags = parse_jablonskis_tag_string(tag_string)
@@ -64,6 +68,8 @@ def get_sorted_stress_options(word, tag_string):
 		max_converted_stress_tag_set_length = 0
 
 		for stressed_word, stress_tags in stress_word(word):
+			dump_stess_cache()
+
 			stress_tags = list(stress_tags)
 			
 			converted_stress_tags = list(tag_map.convert_kirtis_to_jablonskis_tags(stress_tags, jablonskis_tag_set))
@@ -156,12 +162,14 @@ def stessed_sentence(tokenlist):
 		if val:
 			tokenlist.metadata[k] = val
 
-def stessed_sentences(encoding='utf-8'):
-	for fp in get_dataset_connlu_files(encoding=encoding):
+def stessed_sentences():
+	load_stess_cache()
+
+	for fp in get_dataset_connlu_files():
 		os.makedirs(os.path.dirname(fp.name), exist_ok=True)
 		if not os.path.exists(fp.name):
 			tmp_name = fp.name + '.tmp'
-			with open(tmp_name, 'wt', encoding=encoding) as fpw:
+			with open(tmp_name, 'wt', encoding=fp.encoding) as fpw:
 				for tokenlist in parse_incr(fp):
 					stessed_sentence(tokenlist)
 					fpw.write(tokenlist.serialize())
@@ -170,6 +178,8 @@ def stessed_sentences(encoding='utf-8'):
 						print (k, v)
 					print()
 			os.rename(tmp_name, fp.name)
+
+	dump_stess_cache(force_dump=True)
 
 if __name__ == '__main__':
 	stessed_sentences()
