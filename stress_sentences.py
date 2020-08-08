@@ -33,12 +33,14 @@ def update_stress_stats(stress_stats, word, sorted_stress_options, jablonskis_ta
 def parse_jablonskis_tag_string(tag_string):
 	for k, v in tag_map.fix_jablonskis_string.items():
 		tag_string = tag_string.replace(k, v)
-	return [tag.group(0) for tag in tag_pattern.finditer(tag_string)]
 
-def fix_jablonskis_tags(jablonskis_tags):
-	for i, tag in enumerate(jablonskis_tags):
+	for m in tag_pattern.finditer(tag_string):
+		tag = m.group(0)
+		
 		if tag in tag_map.fix_jablonskis_tag_map_key_set:
-			jablonskis_tags[i] = tag_map.fix_jablonskis_tag_map[tag]
+			tag = tag_map.fix_jablonskis_tag_map[tag]
+
+		yield tag
 
 last_dump = -1
 def dump_stess_cache(filename='stress_cache.json', force_dump=False):
@@ -59,8 +61,7 @@ def load_stess_cache(filename='stress_cache.json'):
 
 def get_sorted_stress_options(word, tag_string):
 	if tag_string:
-		jablonskis_tags = parse_jablonskis_tag_string(tag_string)
-		fix_jablonskis_tags(jablonskis_tags)
+		jablonskis_tags = list(parse_jablonskis_tag_string(tag_string))
 		jablonskis_tag_set = set(jablonskis_tags)
 		
 		invalid_jablonskis_tags = jablonskis_tag_set.difference(tag_map.valid_jablonskis_tag_set)
