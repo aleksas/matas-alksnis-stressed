@@ -3,6 +3,7 @@ from vdu_nlp_services import soap_stressor
 from vdu_nlp_services import stress_word
 from collections import OrderedDict
 from conllu import parse_incr
+import word_stress_db 
 import tag_map
 import re
 import os
@@ -10,18 +11,20 @@ import json
 
 tag_pattern = re.compile(r'([\w-]+\.)|(kita)')
 
-def update_stress_stats(stress_stats, word, sorted_stress_options):
+def update_stress_stats(stress_stats, word, sorted_stress_options, jablonskis_tags):
 	stress_option_count = len(set([s for _,s,_,_ in sorted_stress_options if s != word]))
 	limited_stress_option_count = len(set([s for v,s,_,_ in sorted_stress_options if s != word and v == sorted_stress_options[0][0]]))
 
 	single_stress_option = stress_option_count == 1
 	multiple_stress_options = stress_option_count > 1
 	no_stress_options = stress_option_count == 0
+	no_stress_option_with_tags_word_count = stress_option_count == 0 and len(jablonskis_tags) > 2
 	multiple_min_diff_stress_options = stress_option_count > 1 and limited_stress_option_count > 1
 
 	stress_stats['single_stress_option_word_count'] += 1 if single_stress_option else 0
 	stress_stats['multiple_stress_option_word_count'] += 1 if multiple_stress_options else 0
 	stress_stats['no_stress_option_word_count'] += 1 if no_stress_options else 0
+	stress_stats['no_stress_option_with_tags_word_count'] += 1 if no_stress_option_with_tags_word_count else 0
 	stress_stats['multiple_best_stress_option_word_count'] += 1 if multiple_min_diff_stress_options else 0
 
 	if multiple_min_diff_stress_options:
@@ -104,11 +107,11 @@ def get_sorted_stress_options(word, tag_string):
 
 		stress_options.sort(key=lambda a: (a[0][0], a[0][1], max_converted_stress_tag_set_length - a[0][2]), reverse=True)			
 		
-		return stress_options, ''.join(jablonskis_tags)
+		return stress_options, ''.join(jablonskis_tags), jablonskis_tags
 	else:
-		return [], tag_string
+		return [], tag_string, []
 
-def stessed_sentence(tokenlist):
+def stessed_sentence(tokenlist, conn):
 	sentence = ''
 	stressed_sentence = ''
 
@@ -116,6 +119,7 @@ def stessed_sentence(tokenlist):
 		'single_stress_option_word_count': 0,
 		'multiple_stress_option_word_count': 0,
 		'no_stress_option_word_count': 0,
+		'no_stress_option_with_tags_word_count': 0,
 		'multiple_best_stress_option_word_count': 0,
 		'words_with_multiple_best_stress_options': set([])
 	}
@@ -128,7 +132,7 @@ def stessed_sentence(tokenlist):
 			remove_tokens.append(token)
 			continue
 		
-		sorted_stress_options, tag_string = get_sorted_stress_options(word, token['xpos'] if 'xpos' in token else '')
+		sorted_stress_options, tag_string, jablonskis_tags = get_sorted_stress_options(word, token['xpos'] if 'xpos' in token else '')
 		if tag_string:
 			token['xpos'] = tag_string
 		
@@ -139,6 +143,9 @@ def stessed_sentence(tokenlist):
 			else:
 				token['misc'].update([('StressedForm', stressed_word)])
 				
+		lemma = token['lemma'] if 'lemma' in token else None
+		word_stress_db.add(conn, word, stressed_word, lemma, jablonskis_tags)
+
 		sentence += word
 		stressed_sentence += stressed_word
 
@@ -149,7 +156,7 @@ def stessed_sentence(tokenlist):
 			sentence += ' '
 			stressed_sentence += ' '
 
-		update_stress_stats(stress_stats, word, sorted_stress_options)
+		update_stress_stats(stress_stats, word, sorted_stress_options, jablonskis_tags)
 
 	for token in remove_tokens:
 		tokenlist.remove(token)
@@ -165,19 +172,21 @@ def stessed_sentence(tokenlist):
 def stessed_sentences():
 	load_stess_cache()
 
-	for fp in get_dataset_connlu_files():
-		os.makedirs(os.path.dirname(fp.name), exist_ok=True)
-		if not os.path.exists(fp.name):
-			tmp_name = fp.name + '.tmp'
-			with open(tmp_name, 'wt', encoding=fp.encoding) as fpw:
-				for tokenlist in parse_incr(fp):
-					stessed_sentence(tokenlist)
-					fpw.write(tokenlist.serialize())
+	with word_stress_db.init('stress.sqlite.db') as conn:
+		for fp in get_dataset_connlu_files():
+			os.makedirs(os.path.dirname(fp.name), exist_ok=True)
+			if not os.path.exists(fp.name):
+				tmp_name = fp.name + '.tmp'
+				with open(tmp_name, 'wt', encoding=fp.encoding) as fpw:
+					for tokenlist in parse_incr(fp):
+						stessed_sentence(tokenlist, conn)
+						fpw.write(tokenlist.serialize())
 
-					for k, v in tokenlist.metadata.items():
-						print (k, v)
-					print()
-			os.rename(tmp_name, fp.name)
+						for k, v in tokenlist.metadata.items():
+							print (k, v)
+						print()
+				os.rename(tmp_name, fp.name)
+				conn.commit()
 
 	dump_stess_cache(force_dump=True)
 
