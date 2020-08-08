@@ -81,7 +81,7 @@ def get_sorted_stress_options(word, tag_string):
 			if tag_map.missing_tags:
 				print ('\n'.join(tag_map.missing_tags))
 
-			converted_stress_tag_difference_set = converted_stress_tag_set.difference( set(jablonskis_tags) )
+			converted_stress_tag_difference_set = converted_stress_tag_set.difference( jablonskis_tag_set )
 
 			if converted_stress_tags and converted_stress_tags[0] not in tag_map.jablonskis_categories:
 				raise Exception()
