@@ -24,4 +24,4 @@ def get_sentences():
 
 if __name__ == '__main__':
 	for sentence in get_sentences():
-		continue#rint(sentence)
+		print(sentence)
