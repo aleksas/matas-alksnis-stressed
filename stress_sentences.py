@@ -42,23 +42,6 @@ def parse_jablonskis_tag_string(tag_string):
 
 		yield tag
 
-last_dump = -1
-def dump_stess_cache(filename='stress_cache.json', force_dump=False):
-	global last_dump
-	soap_stressor_stress_text_cache_len = len(soap_stressor._stress_text_cache)
-	if force_dump or (soap_stressor_stress_text_cache_len % 100 == 0 and last_dump != soap_stressor_stress_text_cache_len):
-		last_dump = soap_stressor_stress_text_cache_len
-		tmp_filename = filename + '.tmp'
-		with open(tmp_filename, 'wt',  encoding='utf-8') as fp:
-			d = {k:{dk:v[dk] for dk in ['Info', 'Klaida', 'out', 'in'] } for (k,v) in soap_stressor._stress_text_cache.items()}
-			json.dump(d, fp)
-		os.rename(tmp_filename, filename)
-
-def load_stess_cache(filename='stress_cache.json'):
-	if os.path.exists(filename):
-		with open(filename, 'rt',  encoding='utf-8') as fp:
-			soap_stressor._stress_text_cache = json.load(fp)
-
 def get_sorted_stress_options(word, tag_string):
 	if tag_string:
 		jablonskis_tags = list(parse_jablonskis_tag_string(tag_string))
@@ -72,8 +55,6 @@ def get_sorted_stress_options(word, tag_string):
 		max_converted_stress_tag_set_length = 0
 
 		for stressed_word, stress_tags in stress_word(word):
-			dump_stess_cache()
-
 			stress_tags = list(stress_tags)
 			
 			converted_stress_tags = list(tag_map.convert_kirtis_to_jablonskis_tags(stress_tags, jablonskis_tag_set))
@@ -171,8 +152,6 @@ def stessed_sentence(tokenlist, conn):
 			tokenlist.metadata[k] = val
 
 def stessed_sentences():
-	load_stess_cache()
-
 	with word_stress_db.init('stress.sqlite.db') as conn:
 		for fp in get_dataset_connlu_files():
 			os.makedirs(os.path.dirname(fp.name), exist_ok=True)
@@ -188,8 +167,6 @@ def stessed_sentences():
 						print()
 				os.rename(tmp_name, fp.name)
 				conn.commit()
-
-	dump_stess_cache(force_dump=True)
 
 if __name__ == '__main__':
 	stessed_sentences()

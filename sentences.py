@@ -12,16 +12,16 @@ def get_sentences():
 				
 				sentence += token['form']
 				
-				space_after = True
-				if 'misc' in token and token['misc'] and 'SpaceAfter' in token['misc']:
-					if token['misc']['SpaceAfter'] == 'No':
-						space_after = False
+				try:
+					no_space_after = token['misc']['SpaceAfter'] == 'No'
+				except (TypeError, KeyError):
+					no_space_after = False
 
-				if space_after:
+				if not no_space_after:
 					sentence += ' '
 
 			yield sentence.rstrip()
 
 if __name__ == '__main__':
 	for sentence in get_sentences():
-		print(sentence)
+		continue#rint(sentence)
