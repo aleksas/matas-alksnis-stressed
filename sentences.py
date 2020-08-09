@@ -1,6 +1,5 @@
 from archive_iterator import get_dataset_connlu_files
 from conllu import parse_incr
-import re
 
 def get_sentences():
 	for fp in get_dataset_connlu_files():
