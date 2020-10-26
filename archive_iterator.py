@@ -1,4 +1,3 @@
-from vdu_nlp_services import stress_word
 from zipfile import ZipFile
 from io import TextIOWrapper
 import re
