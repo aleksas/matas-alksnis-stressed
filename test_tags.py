@@ -1,5 +1,5 @@
 from vdu_nlp_services import stress_word
-from multext_east_jablonskis_convertor import get_jablonskis_tags
+from morpho_tagsets_lt import multext_east_to_jablonskis_tags
 from zipfile import ZipFile
 from conllu import parse_incr
 from io import TextIOWrapper
@@ -46,8 +46,8 @@ def get_stessed_sentences():
                 multext = token['misc']['Multext']
                 jablonskis_tags = None
                 try:
-                    jablonskis_tags = get_jablonskis_tags(multext)
-                except Exception as e:
+                    jablonskis_tags = multext_east_to_jablonskis_tags(multext)
+                except Exception:# as e:
                     #print(e)
                     pass
                 jablonskis_tag_set = set(jablonskis_tags)

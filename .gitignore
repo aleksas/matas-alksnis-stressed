@@ -4,3 +4,8 @@ __pycache__
 Alksnis-3.0
 MATAS-v1.0
 stress_cache.json
+stress.sqlite.db*
+__pycache__
+Alksnis-3.0-stressed
+MATAS-v1.0-stressed
+.vscode
