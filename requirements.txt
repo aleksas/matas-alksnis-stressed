@@ -2,7 +2,7 @@ vdu-nlp-services>=0.0.26
 phonology-engine
 conllu<3
 huggingface_hub
-datasets==4.8.5
+datasets==5.0.1
 pyarrow==23.0.1
 git+https://github.com/aleksas/morpho-tagsets-lt.git
 git+https://github.com/aleksas/lki.git
