@@ -102,18 +102,18 @@ The published Hugging Face artifact was rebuilt from the stressed archives with 
 3. passed eligible, number-free sentences through `phonology_engine` as the final fallback;
 4. accepted a `phonology_engine` result only when its source span mapped to the same token and removing the stress marks reproduced the original form;
 5. reconstructed the Unicode-stressed sentence using the CoNLL-U token order and spacing metadata;
-6. exported only sentences with no unresolved stressable token and no Arabic- or Roman-numeral token.
+6. exported only sentences with no unresolved stressable token and no Arabic- or Roman-numeral token. A Roman numeral must be upper case and tagged `sktv.`: the numeral `dvi` (two) is spelled with Roman-numeral letters, and a case-insensitive match had excluded every sentence containing it.
 
-The published `111,358` sentences contain `1,147,025` stressable word occurrences. Their visible current-rebuild provenance is:
+The published `111,719` sentences contain `1,152,480` stressable word occurrences. Their visible current-rebuild provenance is:
 
 | Current `stress_source` | Words | Exact meaning |
 | --- | ---: | --- |
-| `legacy` | 1,138,365 | Carried from the 2020 stressed archives; usually VDU-based, but the old archives cannot separate their internal cache/LKIIS fallbacks |
-| `lki.words` | 1,681 | Newly filled by exact destressed-form lookup in the LKIIS-derived collection |
-| `phonology_engine` | 6,979 | Newly filled by accepted sentence-level LIEPA-style output |
+| `legacy` | 1,143,782 | Carried from the 2020 stressed archives; usually VDU-based, but the old archives cannot separate their internal cache/LKIIS fallbacks |
+| `lki.words` | 1,684 | Newly filled by exact destressed-form lookup in the LKIIS-derived collection |
+| `phonology_engine` | 7,014 | Newly filled by accepted sentence-level LIEPA-style output |
 | `cache` or fresh VDU call | 0 | No published token was newly attributed to either path during this archive rebuild |
 
-The source pool contained `147,670` sentences. The public export omitted `36,312` because they still contained an unresolved stressable word, an Arabic/Roman numeral, or both. “Fully stressed” therefore describes the selected subset; it does not mean every selected stress was unambiguous or manually verified.
+The source pool contained `147,670` sentences. The public export omitted `35,951` because they still contained an unresolved stressable word, an Arabic/Roman numeral, or both. “Fully stressed” therefore describes the selected subset; it does not mean every selected stress was unambiguous or manually verified.
 
 ### Provenance limitations
 

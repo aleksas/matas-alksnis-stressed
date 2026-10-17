@@ -12,7 +12,9 @@ from archive_iterator import get_dataset_connlu_files
 
 
 DIGIT_PATTERN = re.compile(r"\d")
-ROMAN_NUMERAL_PATTERN = re.compile(r"^[IVXLCDM]+$", re.IGNORECASE)
+# Upper case only: the numeral `dvi` (two) is spelled with Roman-numeral letters
+# and is tagged `sktv.`, so a case-insensitive match dropped every sentence with it.
+ROMAN_NUMERAL_PATTERN = re.compile(r"^[IVXLCDM]+$")
 
 DATASET_TITLE = "LT Stressed Corpus"
 DATASET_SLUG = "lt-stressed-corpus"
@@ -787,7 +789,11 @@ def write_dataset_card(output_dir, summary):
         "",
         "VDU describes Kirtis as a morphology- and rule-based accentuator using Lemuoklis, syllabification, and lexical resources derived from Lithuanian dictionaries and accentuation references ([2005 report](https://sitti.vdu.lt/wp-content/uploads/2025/02/T_41_05_ataskaita.pdf); [2010 description](https://portalcris.vdu.lt/server/api/core/bitstreams/5e0a886f-e75c-4716-b7e7-a3c0ed837b9f/content)). If Kirtis did not supply a stressed form, the build tried an exact lookup in stressed entries collected from LKIIS dictionaries.",
         "",
-        "The current release preserved `1,138,365` forms from those 2020 stressed archives as `legacy`, added `1,681` exact LKIIS-derived lookups, and added `6,979` sentence-level fallbacks from [`phonology_engine`](https://github.com/aleksas/phonology_engine), derived from LIEPA-1. Because the old archives did not record a provider for each token, `legacy` usually means VDU-selected but can also include an older cache or dictionary fallback. The stress layer is automatic rather than exhaustively human-verified.",
+        "The current release preserved `%s` forms from those 2020 stressed archives as `legacy`, added `%s` exact LKIIS-derived lookups, and added `%s` sentence-level fallbacks from [`phonology_engine`](https://github.com/aleksas/phonology_engine), derived from LIEPA-1. Because the old archives did not record a provider for each token, `legacy` usually means VDU-selected but can also include an older cache or dictionary fallback. The stress layer is automatic rather than exhaustively human-verified." % (
+            format_int(overall.get("legacy_word_count", 0)),
+            format_int(overall.get("lki_words_word_count", 0)),
+            format_int(overall.get("phonology_engine_word_count", 0)),
+        ),
         "",
         "The public export keeps only fully resolved sentences without Arabic or Roman numerals.",
     ])
