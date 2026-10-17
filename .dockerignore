@@ -1,0 +1,15 @@
+.git
+.gitignore
+.pytest_cache
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite
+*.sqlite3
+stress.sqlite.db
+unstressed.txt
+Alksnis-3.0-stressed/
+MATAS-v1.0-stressed/
+datasets/

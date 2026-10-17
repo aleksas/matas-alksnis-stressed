@@ -2,15 +2,11 @@ from archive_iterator import get_dataset_connlu_files
 from conllu import parse_incr
 
 def get_sentences(stressed=False):
-	for fp in get_dataset_connlu_files():
-		first_tokenlist = True
+	first_tokenlist = True
+	for fp in get_dataset_connlu_files(stressed=stressed):
 		for tokenlist in parse_incr(fp):
-			first_token = True
-			sentence = ''
+			sentence = '\n' if not first_tokenlist and tokenlist.metadata.get('newpar id') else ''
 			for token in tokenlist:
-				if not first_token or not first_tokenlist and tokenlist.metadata['newpar id']:
-					sentence += '\n'
-
 				form = token['misc']['StressedForm'] if stressed and 'misc' in token and token['misc'] and 'StressedForm' in token['misc']  else token['form'] 
 				if form == '<g/>':
 					continue
@@ -27,8 +23,7 @@ def get_sentences(stressed=False):
 
 			yield sentence
 
-			first_token = False			
-		first_tokenlist = False
+			first_tokenlist = False
 
 if __name__ == '__main__':
 	for sentence in get_sentences(True):

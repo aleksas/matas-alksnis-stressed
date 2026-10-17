@@ -9,3 +9,6 @@ __pycache__
 Alksnis-3.0-stressed
 MATAS-v1.0-stressed
 .vscode
+.env
+.env.*
+hf_export*/
